@@ -1,0 +1,53 @@
+version: '3.7'
+
+services:
+  minio:
+    image: minio/minio:latest
+    container_name: minio
+    environment:
+      MINIO_ACCESS_KEY: "youraccesskey"   # Задайте свой access key
+      MINIO_SECRET_KEY: "yoursecretkey"   # Задайте свой secret key
+    ports:
+      - "9000:9000"   # Открываем порт для интерфейса и API
+      - "9001:9001"   # Открываем порт для веб-интерфейса MinIO
+    volumes:
+      - minio_data:/data  # Монтируем том для хранения данных
+    command: server /data
+    restart: always
+
+
+  # mc:
+  #   image: minio/mc:latest
+  #   entrypoint: >
+  #     /bin/sh -c "
+  #     # Задержка, чтобы MinIO успел запуститься
+  #     sleep 10;
+  #     # Настроим MinIO Client
+  #     mc alias set myminio http://minio:9000 youraccesskey yoursecretkey &&
+  #     # Применим CORS для бакета
+  #     mc admin bucket cors set myminio/my-local-bucket /etc/mc/cors.json"
+  #   volumes:
+  #     - ./cors.json:/etc/mc/cors.json
+  #   restart: "no"
+
+  deploy:
+    image: minio/mc
+    depends_on:
+      - minio
+    entrypoint: >
+      /bin/sh -c
+      # Задержка, чтобы MinIO успел запуститься
+      sleep 10;
+      # Настроим MinIO Client
+      mc alias set myminio http://minio:9000 youraccesskey yoursecretkey &&
+      # Применим CORS для бакета
+      mc admin bucket cors set myminio/my-local-bucket /etc/mc/cors.json
+      mc admin policy set myminio/my-local-bucket /etc/mc/policy.json
+    volumes:
+      - ./cors.json:/etc/mc/cors.json
+      - ./policy.json:/etc/mc/policy.json
+    restart: "no"
+
+volumes:
+  minio_data:
+    driver: local
