@@ -1,11 +1,10 @@
-{
-  "CORSRules": [
-      {
-          "AllowedOrigins": ["http://localhost:8080"],
-          "AllowedMethods": ["GET", "PUT", "POST"],
-          "AllowedHeaders": ["*"],
-          "ExposeHeaders": ["x-amz-request-id"],
-          "MaxAgeSeconds": 3000
-      }
+[
+    {
+      "AllowedOrigins": ["*"],
+      "AllowedMethods": ["GET", "POST", "PUT", "DELETE"],
+      "AllowedHeaders": ["*"],
+      "ExposeHeaders": ["ETag"],
+      "MaxAgeSeconds": 3600
+    }
   ]
-}
+  
