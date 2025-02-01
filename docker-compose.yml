@@ -30,7 +30,15 @@ services:
     image: minio/mc
     depends_on:
       - minio
-    command: ["bash","/etc/mc/app.sh"]
+    entrypoint: >
+      /bin/sh -c
+      # Задержка, чтобы MinIO успел запуститься
+      sleep 10;
+      # Настроим MinIO Client
+      mc alias set myminio http://minio:9000 youraccesskey yoursecretkey &&
+      # Применим CORS для бакета
+      mc admin bucket cors set myminio/my-local-bucket /etc/mc/cors.json
+      mc admin policy set myminio/my-local-bucket /etc/mc/policy.json
     volumes:
       - ./cors.json:/etc/mc/cors.json
       - ./policy.json:/etc/mc/policy.json
