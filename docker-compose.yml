@@ -47,3 +47,8 @@ services:
 volumes:
   minio_data:
     driver: local
+
+networks:
+  default:
+    external:
+      name: traefik_default
