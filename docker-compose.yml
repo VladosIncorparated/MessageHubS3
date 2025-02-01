@@ -9,26 +9,22 @@ services:
       MINIO_SECRET_KEY: "yoursecretkey"   # Задайте свой secret key
     ports:
       - "9000:9000"   # Открываем порт для интерфейса и API
-      - "9001:9001"   # Открываем порт для веб-интерфейса MinIO
     volumes:
       - minio_data:/data  # Монтируем том для хранения данных
     command: server /data
     restart: always
 
-
-  # mc:
-  #   image: minio/mc:latest
-  #   entrypoint: >
-  #     /bin/sh -c "
-  #     # Задержка, чтобы MinIO успел запуститься
-  #     sleep 10;
-  #     # Настроим MinIO Client
-  #     mc alias set myminio http://minio:9000 youraccesskey yoursecretkey &&
-  #     # Применим CORS для бакета
-  #     mc admin bucket cors set myminio/my-local-bucket /etc/mc/cors.json"
-  #   volumes:
-  #     - ./cors.json:/etc/mc/cors.json
-  #   restart: "no"
+    labels:
+      - traefik.enable=true
+      - traefik.http.middlewares.s3_https.redirectscheme.scheme=https
+      - traefik.http.routers.s3.entrypoints=web
+      - traefik.http.routers.s3.middlewares=s3_https@docker
+      - traefik.http.routers.s3.rule=Host(`s3.server_name.youdomain`)
+      - traefik.http.routers.s3_https.entrypoints=websecure
+      - traefik.http.routers.s3_https.rule=Host(`s3.server_name.youdomain`)
+      - traefik.http.routers.s3_https.tls=true
+      - traefik.http.routers.s3_https.tls.certresolver=le
+      - traefik.http.services.s3.loadbalancer.server.port=9000
 
   deploy:
     image: minio/mc
